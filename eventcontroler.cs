@@ -1,8 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
-using Assets.LSL4Unity.Scripts;
+using LSL;
 
 public class eventcontroler : MonoBehaviour
 {
@@ -23,16 +22,27 @@ public class eventcontroler : MonoBehaviour
     float TimeCounter =0f;
 
     //marker sending
-    private LSLMarkerStream marker;
+
 
 
    bool  markerOnce = true ;
+
+           [SerializeField]   string StreamName = "LSL4Unity.Samples.SimpleCollisionEvent";
+           [SerializeField]  string StreamType = "Markers";
+        private StreamOutlet outlet;
+        private string[] sample = {""};
 
 
     // Start is called before the first frame update
     void Start()
     {
-        marker =  FindObjectOfType< LSLMarkerStream>();
+                   var hash = new Hash128();
+            hash.Append(StreamName);
+            hash.Append(StreamType);
+            hash.Append(gameObject.GetInstanceID());
+            StreamInfo streamInfo = new StreamInfo(StreamName, StreamType, 1, LSL.LSL.IRREGULAR_RATE,
+                channel_format_t.cf_string, hash.ToString());
+            outlet = new StreamOutlet(streamInfo);
     }
 
     // Update is called once per frame
@@ -63,8 +73,11 @@ public class eventcontroler : MonoBehaviour
     {
         if(TimeCounter >=maruTimeIN && markerOnce  == true)
         {
-         marker.Write("Maru On"+this.name);
-         markerOnce = false;
+         //marker.Write("Maru On"+this.name);
+        
+       outputTrigger();
+       markerOnce = false;
+       Debug.Log( 1);
         }
     }
     void EndOnetrial()
@@ -92,9 +105,12 @@ public class eventcontroler : MonoBehaviour
         
       }
     }
+     public void outputTrigger()
+        {
+           
+            sample[0] = "trialtimeNow"+trialtimeNow +"Triggerin "+Time.deltaTime + gameObject.GetInstanceID();  //  trial time , scene name , this time.
+                // Debug.Log(sample[0]);
+                outlet.push_sample(sample);
+        }
 
  }
-
-
-
-
